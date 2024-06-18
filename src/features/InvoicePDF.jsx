@@ -2,8 +2,6 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 
 const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
-  const timeStamp = new Date().toISOString();
-
   const generatePDF = () => {
     const doc = new jsPDF();
 
@@ -19,15 +17,23 @@ const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
     const maxWidth = doc.internal.pageSize.getWidth() / 2 - 30;
     const startY = 40;
 
+    // Helper function to draw bold text
+    const drawBoldText = (text, x, y) => {
+      doc.setFont("helvetica", "bold");
+      doc.text(text, x, y);
+      doc.setFont("helvetica", "normal"); // Reset to normal font after drawing
+    };
+
+    let currentY = startY;
+
     // Add seller details
-    const sellerNameLines = splitTextIntoLines(`<b>Sold by:</b>\n${invoiceInfoHeaderData.sellerName}`, maxWidth);
+    const sellerNameLines = splitTextIntoLines(`Sold by:\n${invoiceInfoHeaderData.sellerName}`, maxWidth);
     const sellerAddressLines = splitTextIntoLines(invoiceInfoHeaderData.sellerAddress, maxWidth);
     const sellerPanLines = splitTextIntoLines(`PAN No: ${invoiceInfoHeaderData.sellerPan}`, maxWidth);
     const sellerGstLines = splitTextIntoLines(`GST Registration No: ${invoiceInfoHeaderData.sellerGst}`, maxWidth);
 
-    let currentY = startY;
     sellerNameLines.forEach(line => {
-      doc.text(line, 20, currentY);
+      drawBoldText(line, 20, currentY);
       currentY += 5;
     });
     sellerAddressLines.forEach(line => {
@@ -35,11 +41,11 @@ const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
       currentY += 5;
     });
     sellerPanLines.forEach(line => {
-      doc.text(line, 20, currentY);
+      drawBoldText(line, 20, currentY);
       currentY += 5;
     });
     sellerGstLines.forEach(line => {
-      doc.text(line, 20, currentY);
+      drawBoldText(line, 20, currentY);
       currentY += 5;
     });
 
@@ -52,7 +58,7 @@ const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
     const startX = doc.internal.pageSize.getWidth() - 20;
     currentY = startY;
 
-    doc.text('Billing Address:', startX - doc.getTextWidth('Billing Address:'), currentY);
+    drawBoldText('Billing Address:', startX - doc.getTextWidth('Billing Address:'), currentY);
     currentY += 5;
 
     billingNameLines.forEach(line => {
@@ -64,7 +70,7 @@ const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
       currentY += 5;
     });
     billingStateCodeLines.forEach(line => {
-      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      drawBoldText(line, startX - doc.getTextWidth(line), currentY);
       currentY += 5;
     });
 
@@ -86,7 +92,7 @@ const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
 
     currentY = 70;
 
-    doc.text('Shipping Address:', startX - doc.getTextWidth('Shipping Address:'), currentY);
+    drawBoldText('Shipping Address:', startX - doc.getTextWidth('Shipping Address:'), currentY);
     currentY += 5;
 
     shippingNameLines.forEach(line => {
@@ -98,27 +104,27 @@ const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
       currentY += 5;
     });
     shippingStateCodeLines.forEach(line => {
-      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      drawBoldText(line, startX - doc.getTextWidth(line), currentY);
       currentY += 5;
     });
     placeOfSupplyLines.forEach(line => {
-      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      drawBoldText(line, startX - doc.getTextWidth(line), currentY);
       currentY += 5;
     });
     placeOfDeliveryLines.forEach(line => {
-      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      drawBoldText(line, startX - doc.getTextWidth(line), currentY);
       currentY += 5;
     });
     invoiceNumberLines.forEach(line => {
-      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      drawBoldText(line, startX - doc.getTextWidth(line), currentY);
       currentY += 5;
     });
     invoiceDetailsLines.forEach(line => {
-      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      drawBoldText(line, startX - doc.getTextWidth(line), currentY);
       currentY += 5;
     });
     invoiceDateLines.forEach(line => {
-      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      drawBoldText(line, startX - doc.getTextWidth(line), currentY);
       currentY += 5;
     });
 
@@ -190,6 +196,10 @@ const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
 };
 
 export default InvoicePDF;
+
+
+
+
 
 
 
