@@ -165,7 +165,7 @@ const InvoiceItemsTable = ({ onRowDataChange }) => {
         />
       </div>
       <div className="mt-4">
-        <strong>Total Price:</strong> {totalPrice.toFixed(2)}
+        {/* <strong>Total Price:</strong> {totalPrice.toFixed(2)} */}
       </div>
     </>
   );

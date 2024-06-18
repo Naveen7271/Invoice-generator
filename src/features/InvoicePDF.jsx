@@ -1,73 +1,126 @@
-// Create and Download PDF file
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+
 const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
   const timeStamp = new Date().toISOString();
 
   const generatePDF = () => {
-    // if (
-    //   !invoiceInfoHeaderData.companyName ||
-    //   !invoiceInfoHeaderData.invoiceNumber
-    // ) {
-    //   alert("Company Name and Invoice Number are required to generate the PDF.");
-    //   return;
-    // }
     const doc = new jsPDF();
 
     // Set font size
     doc.setFontSize(12);
 
-    // Add content to this pdf document
-    //seller details
-    // doc.text("Tax Invoice/Bill of Supply/Cash Memo", 50, 50);
-    doc.text(`Sold by:\n ${invoiceInfoHeaderData.sellerName}`, 20, 40);
-    doc.text(`${invoiceInfoHeaderData.sellerAddress}`, 20, 50);
-    doc.text(`PAN No: ${invoiceInfoHeaderData.sellerPan}`, 20, 60);
-    doc.text(`GST Registration No: ${invoiceInfoHeaderData.sellerGst}`, 20, 65);
+    // Function to split text into lines based on a maximum width
+    const splitTextIntoLines = (text, maxWidth) => {
+      return doc.splitTextToSize(text, maxWidth);
+    };
 
-    // Calculate the width of the text segments
-    const billingNameWidth = doc.getTextWidth(invoiceInfoHeaderData.billingName);
-    const billingAddressWidth = doc.getTextWidth(invoiceInfoHeaderData.billingAddress);
-    const stateCodeText = `State/UT Code: ${invoiceInfoHeaderData.stateCode}`;
-    const stateCodeWidth = doc.getTextWidth(stateCodeText);
-
-    // Set the starting position from the right
-    const startX = doc.internal.pageSize.getWidth() - 20; // 20 is the margin from the right
+    // Define maximum width and starting Y position
+    const maxWidth = doc.internal.pageSize.getWidth() / 2 - 30;
     const startY = 40;
 
-    // Draw the text from right to left for billing address
-    doc.text('Billing Address:', startX - doc.getTextWidth('Billing Address:'), startY);
-    doc.text(invoiceInfoHeaderData.billingName, startX - billingNameWidth, startY + 5);
-    doc.text(invoiceInfoHeaderData.billingAddress, startX - billingAddressWidth, startY + 10);
-    doc.text(stateCodeText, startX - stateCodeWidth, startY + 15);
+    // Add seller details
+    const sellerNameLines = splitTextIntoLines(`<b>Sold by:</b>\n${invoiceInfoHeaderData.sellerName}`, maxWidth);
+    const sellerAddressLines = splitTextIntoLines(invoiceInfoHeaderData.sellerAddress, maxWidth);
+    const sellerPanLines = splitTextIntoLines(`PAN No: ${invoiceInfoHeaderData.sellerPan}`, maxWidth);
+    const sellerGstLines = splitTextIntoLines(`GST Registration No: ${invoiceInfoHeaderData.sellerGst}`, maxWidth);
 
-    // Calculate the width of the text segments for shipping address
-    const shippingNameWidth = doc.getTextWidth(invoiceInfoHeaderData.shippingName);
-    const shippingAddressWidth = doc.getTextWidth(invoiceInfoHeaderData.shippingAddress);
+    let currentY = startY;
+    sellerNameLines.forEach(line => {
+      doc.text(line, 20, currentY);
+      currentY += 5;
+    });
+    sellerAddressLines.forEach(line => {
+      doc.text(line, 20, currentY);
+      currentY += 5;
+    });
+    sellerPanLines.forEach(line => {
+      doc.text(line, 20, currentY);
+      currentY += 5;
+    });
+    sellerGstLines.forEach(line => {
+      doc.text(line, 20, currentY);
+      currentY += 5;
+    });
+
+    // Add billing address details
+    const billingNameLines = splitTextIntoLines(invoiceInfoHeaderData.billingName, maxWidth);
+    const billingAddressLines = splitTextIntoLines(invoiceInfoHeaderData.billingAddress, maxWidth);
+    const billingStateCodeText = `State/UT Code: ${invoiceInfoHeaderData.stateCode}`;
+    const billingStateCodeLines = splitTextIntoLines(billingStateCodeText, maxWidth);
+
+    const startX = doc.internal.pageSize.getWidth() - 20;
+    currentY = startY;
+
+    doc.text('Billing Address:', startX - doc.getTextWidth('Billing Address:'), currentY);
+    currentY += 5;
+
+    billingNameLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+    billingAddressLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+    billingStateCodeLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+
+    // Add shipping address details
+    const shippingNameLines = splitTextIntoLines(invoiceInfoHeaderData.shippingName, maxWidth);
+    const shippingAddressLines = splitTextIntoLines(invoiceInfoHeaderData.shippingAddress, maxWidth);
     const shippingStateCodeText = `State/UT Code: ${invoiceInfoHeaderData.stateCode}`;
-    const shippingStateCodeWidth = doc.getTextWidth(shippingStateCodeText);
-    const placeOfSupplyText = `Place of Supply ${invoiceInfoHeaderData.supplyAddress}`;
-    const placeOfSupplyWidth = doc.getTextWidth(placeOfSupplyText);
-    const placeOfDeliveryText = `Place of Delivery ${invoiceInfoHeaderData.deliveryAddress}`;
-    const placeOfDeliveryWidth = doc.getTextWidth(placeOfDeliveryText);
-    const invoiceNumberText = `Invoice Number ${invoiceInfoHeaderData.invoiceNumber}`;
-    const invoiceNumberWidth = doc.getTextWidth(invoiceNumberText);
-    const invoiceDetailsText = `Invoice Details ${invoiceInfoHeaderData.invoiceDetails}`;
-    const invoiceDetailsWidth = doc.getTextWidth(invoiceDetailsText);
-    const invoiceDateText = `Invoice Date ${invoiceInfoHeaderData.invoiceDate}`;
-    const invoiceDateWidth = doc.getTextWidth(invoiceDateText);
+    const shippingStateCodeLines = splitTextIntoLines(shippingStateCodeText, maxWidth);
+    const placeOfSupplyText = `Place of Supply: ${invoiceInfoHeaderData.supplyAddress}`;
+    const placeOfSupplyLines = splitTextIntoLines(placeOfSupplyText, maxWidth);
+    const placeOfDeliveryText = `Place of Delivery: ${invoiceInfoHeaderData.deliveryAddress}`;
+    const placeOfDeliveryLines = splitTextIntoLines(placeOfDeliveryText, maxWidth);
+    const invoiceNumberText = `Invoice Number: ${invoiceInfoHeaderData.invoiceNumber}`;
+    const invoiceNumberLines = splitTextIntoLines(invoiceNumberText, maxWidth);
+    const invoiceDetailsText = `Invoice Details: ${invoiceInfoHeaderData.invoiceDetails}`;
+    const invoiceDetailsLines = splitTextIntoLines(invoiceDetailsText, maxWidth);
+    const invoiceDateText = `Invoice Date: ${invoiceInfoHeaderData.invoiceDate}`;
+    const invoiceDateLines = splitTextIntoLines(invoiceDateText, maxWidth);
 
-    // Draw the text from right to left for shipping address
-    doc.text('Shipping Address:', startX - doc.getTextWidth('Shipping Address:'), 70);
-    doc.text(invoiceInfoHeaderData.shippingName, startX - shippingNameWidth, 75);
-    doc.text(invoiceInfoHeaderData.shippingAddress, startX - shippingAddressWidth, 80);
-    doc.text(shippingStateCodeText, startX - shippingStateCodeWidth, 85);
-    doc.text(placeOfSupplyText, startX - placeOfSupplyWidth, 90);
-    doc.text(placeOfDeliveryText, startX - placeOfDeliveryWidth, 95);
-    doc.text(invoiceNumberText, startX - invoiceNumberWidth, 100);
-    doc.text(invoiceDetailsText, startX - invoiceDetailsWidth, 105);
-    doc.text(invoiceDateText, startX - invoiceDateWidth, 110);
+    currentY = 70;
 
+    doc.text('Shipping Address:', startX - doc.getTextWidth('Shipping Address:'), currentY);
+    currentY += 5;
+
+    shippingNameLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+    shippingAddressLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+    shippingStateCodeLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+    placeOfSupplyLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+    placeOfDeliveryLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+    invoiceNumberLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+    invoiceDetailsLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
+    invoiceDateLines.forEach(line => {
+      doc.text(line, startX - doc.getTextWidth(line), currentY);
+      currentY += 5;
+    });
 
     // Define columns
     const columns = [
@@ -95,13 +148,14 @@ const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
       taxtype: item.taxtype,
       taxamount: item.taxamount,
       totalamount: item.totalamount,
+      total: item.totalamount
     }));
 
     // Create the table using jspdf-autotable
     doc.autoTable({
       head: [columns.map(col => col.header)],
       body: rows.map(row => columns.map(col => row[col.dataKey])),
-      startY: 130, // Adjust this as needed
+      startY: currentY + 20, // Adjust this as needed
       styles: {
         fontSize: 10,
         cellPadding: 2,
@@ -136,3 +190,7 @@ const InvoicePDF = ({ invoiceInfoHeaderData, invoiceItemsTableData }) => {
 };
 
 export default InvoicePDF;
+
+
+
+
